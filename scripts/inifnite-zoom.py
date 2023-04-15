@@ -8,7 +8,7 @@ import numpy as np
 import gradio as gr
 from PIL import Image
 
-from iz_helpers import shrink_and_paste_on_blank, write_video
+from iz_helpers import shrink_and_paste_on_blank, pan_and_paste_on_blank, write_video
 from webui import wrap_gradio_gpu_call
 from modules import script_callbacks
 import modules.shared as shared
@@ -92,6 +92,7 @@ def renderImg2Img(
 def create_zoom(
     prompts_array,
     negative_prompt,
+    outpaint_mode,
     num_outpainting_steps,
     guidance_scale,
     num_inference_steps,
@@ -149,7 +150,10 @@ def create_zoom(
 
         prev_image_fix = current_image
 
-        prev_image = shrink_and_paste_on_blank(current_image, mask_width)
+        if outpaint_mode == "zoom":
+            prev_image = shrink_and_paste_on_blank(current_image, mask_width)
+        else:
+            prev_image = pan_and_paste_on_blank(current_image, mask_width)
 
         current_image = prev_image
 
@@ -266,6 +270,13 @@ def on_ui_tabs():
                         value=default_negative_prompt, label="Negative Prompt"
                     )
 
+                    outpaint_mode = gr.Radio(
+                        label="Outpaint mode",
+                        choices=["Zoom", "Pan"],
+                        value="Zoom",
+                        type="index",
+                    )
+
                     outpaint_steps = gr.Slider(
                         minimum=2,
                         maximum=100,
@@ -360,6 +371,7 @@ def on_ui_tabs():
             inputs=[
                 outpaint_prompts,
                 outpaint_negative_prompt,
+                outpaint_mode,
                 outpaint_steps,
                 guidance_scale,
                 sampling_step,
