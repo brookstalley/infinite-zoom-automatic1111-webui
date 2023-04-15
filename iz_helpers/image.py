@@ -34,11 +34,11 @@ def shrink_and_paste_on_blank(current_image, mask_width):
 
 def pan_and_paste_on_blank(current_image, pan_width):
     """
-    Decreases size of current_image by mask_width pixels from each side,
+    Crops the image to remove pan_width on either left or right,
     then adds a mask_width width transparent frame, 
     so that the image the function returns is the same size as the input. 
     :param current_image: input image to transform
-    :param mask_width: width in pixels to shrink from each side
+    :param pan_width: width in pixels to cut from left (if negative) or right (if positive)
     """
 
     height = current_image.height
