@@ -46,12 +46,13 @@ def pan_and_paste_on_blank(current_image, pan_width):
 
     # crop pan_width pixels. if pan_width is negative, crop from the left. if pan_width is positive, crop from the right
     
+    left = pan_width
+    right = width - 1
+
+    # to support panning left in the future
     if pan_width < 0:
         left = 0
         right = width + pan_width
-    else:
-        left = pan_width
-        right = width - 1
 
     top = 0
     bottom = height - 1
