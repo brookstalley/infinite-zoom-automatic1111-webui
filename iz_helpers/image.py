@@ -61,7 +61,7 @@ def pan_and_paste_on_blank(current_image, pan_width):
     if pan_width < 0:
         blank_image[-pan_width:0, width:height, :] = prev_image
     else:
-        blank_image[0,0:(width-1)-pan_width : (height-1), :] = prev_image
+        blank_image[0:0, (width-1)-pan_width : (height-1), :] = prev_image
 
     prev_image = Image.fromarray(blank_image)
 
