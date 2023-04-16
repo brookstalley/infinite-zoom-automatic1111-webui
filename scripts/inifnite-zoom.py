@@ -150,7 +150,7 @@ def create_zoom(
 
         prev_image_fix = current_image
 
-        if outpaint_mode == "zoom":
+        if outpaint_mode == "Zoom":
             prev_image = shrink_and_paste_on_blank(current_image, mask_width)
         else:
             prev_image = pan_and_paste_on_blank(current_image, mask_width)
