@@ -45,10 +45,18 @@ def pan_and_paste_on_blank(current_image, pan_width):
     width = current_image.width
 
     # crop pan_width pixels. if pan_width is negative, crop from the left. if pan_width is positive, crop from the right
+    
     if pan_width < 0:
-        prev_image = current_image.crop((0, 0, width+pan_width, height))
+        left = 0
+        right = width + pan_width
     else:
-        prev_image = current_image.crop((pan_width, 0, width, height))
+        left = pan_width
+        right = width - 1
+
+    top = 0
+    bottom = height - 1
+    
+    prev_image = current_image.crop((left, top, right, bottom))
 
     prev_image = prev_image.convert("RGBA")
     prev_image = np.array(prev_image)
@@ -61,7 +69,7 @@ def pan_and_paste_on_blank(current_image, pan_width):
     if pan_width < 0:
         blank_image[-pan_width:0, width:height, :] = prev_image
     else:
-        blank_image[0:0, (width-1)-pan_width : (height-1), :] = prev_image
+        blank_image[0:height-1, 0 : (width-1)-pan_width, :] = prev_image
 
     prev_image = Image.fromarray(blank_image)
 
