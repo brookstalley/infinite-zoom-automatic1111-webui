@@ -176,12 +176,12 @@ def create_zoom(
         )
     return result
 
-def get_interpol_image_zoom(prev_image_fix, interpol_image, mask_width, mask_height, width, height, num_interpol_frames, j):
+def get_interpol_image_zoom(prev_image_fix, interpol_image, mask_width, mask_height, width, height, interpol_pct):
     interpol_width = round(
         (
             1
             - (1 - 2 * mask_width / width)
-            ** (1 - (j + 1) / num_interpol_frames)
+            ** (1 - interpol_pct)
         )
         * width
         / 2
@@ -191,7 +191,7 @@ def get_interpol_image_zoom(prev_image_fix, interpol_image, mask_width, mask_hei
         (
             1
             - (1 - 2 * mask_height / height)
-            ** (1 - (j + 1) / num_interpol_frames)
+            ** (1 - interpol_pct)
         )
         * height
         / 2
@@ -227,12 +227,12 @@ def get_interpol_image_zoom(prev_image_fix, interpol_image, mask_width, mask_hei
 
     interpol_image.paste(prev_image_fix_crop, mask=prev_image_fix_crop)
 
-def get_interpol_image_pan(prev_image_fix, interpol_image, mask_width, mask_height, width, height, num_interpol_frames, j):
+def get_interpol_image_pan(prev_image_fix, interpol_image, mask_width, mask_height, width, height, interpol_pct):
     interpol_width = round(
         (
             1
-            - (1 - 2 * mask_width / width)
-            ** (1 - (j + 1) / num_interpol_frames)
+            - (1 - mask_width / width)
+            ** (1 - interpol_pct)
         )
         * width
     )
@@ -248,8 +248,7 @@ def get_interpol_image_pan(prev_image_fix, interpol_image, mask_width, mask_heig
 
     # paste the higher resolution previous image in the middle to avoid drop in quality caused by zooming
     interpol_width2 = round(
-        (1 - (width - 2 * mask_width) / (width - 2 * interpol_width))
-        / 2
+        (1 - (width - mask_width) / (width - 2 * interpol_width))
         * width
     )
 
@@ -371,11 +370,12 @@ def create_zoom_single(
         # interpolation steps between 2 inpainted images (=sequential zoom and crop)
         for j in range(num_interpol_frames - 1):
             interpol_image = current_image
+            interpol_pct = (j + 1) / num_interpol_frames
 
             if (anim_mode == "Zoom"): 
-                intepol_image = get_interpol_image_zoom(prev_image_fix, interpol_image, mask_width, mask_height, width, height, num_interpol_frames, j)
+                intepol_image = get_interpol_image_zoom(prev_image_fix, interpol_image, mask_width, mask_height, width, height, interpol_pct)
             else:
-                intepol_image = get_interpol_image_pan(prev_image_fix, interpol_image, mask_width, width, height, num_interpol_frames, j)
+                intepol_image = get_interpol_image_pan(prev_image_fix, interpol_image, mask_width, width, height, interpol_pct)
 
             all_frames.append(interpol_image)
         all_frames.append(current_image)
