@@ -176,6 +176,88 @@ def create_zoom(
         )
     return result
 
+def get_interpol_image_zoom(prev_image_fix, interpol_image, mask_width, mask_height, width, height, num_interpol_frames, j):
+    interpol_width = round(
+        (
+            1
+            - (1 - 2 * mask_width / width)
+            ** (1 - (j + 1) / num_interpol_frames)
+        )
+        * width
+        / 2
+    )
+
+    interpol_height = round(
+        (
+            1
+            - (1 - 2 * mask_height / height)
+            ** (1 - (j + 1) / num_interpol_frames)
+        )
+        * height
+        / 2
+    )
+
+    interpol_image = interpol_image.crop(
+        (
+            interpol_width,
+            interpol_height,
+            width - interpol_width,
+            height - interpol_height,
+        )
+    )
+
+    interpol_image = interpol_image.resize((width, height))
+
+    # paste the higher resolution previous image in the middle to avoid drop in quality caused by zooming
+    interpol_width2 = round(
+        (1 - (width - 2 * mask_width) / (width - 2 * interpol_width))
+        / 2
+        * width
+    )
+
+    interpol_height2 = round(
+        (1 - (height - 2 * mask_height) / (height - 2 * interpol_height))
+        / 2
+        * height
+    )
+
+    prev_image_fix_crop = shrink_and_paste_on_blank(
+        prev_image_fix, interpol_width2, interpol_height2
+    )
+
+    interpol_image.paste(prev_image_fix_crop, mask=prev_image_fix_crop)
+
+def get_interpol_image_pan(prev_image_fix, interpol_image, mask_width, mask_height, width, height, num_interpol_frames, j):
+    interpol_width = round(
+        (
+            1
+            - (1 - 2 * mask_width / width)
+            ** (1 - (j + 1) / num_interpol_frames)
+        )
+        * width
+    )
+
+    interpol_image = interpol_image.crop(
+        (
+            0,
+            height,
+            interpol_width,
+            height,
+        )
+    )
+
+    # paste the higher resolution previous image in the middle to avoid drop in quality caused by zooming
+    interpol_width2 = round(
+        (1 - (width - 2 * mask_width) / (width - 2 * interpol_width))
+        / 2
+        * width
+    )
+
+    prev_image_fix_crop = pan_and_paste_on_blank(
+        prev_image_fix, interpol_width2
+    )
+
+    interpol_image.paste(prev_image_fix_crop, mask=prev_image_fix_crop)
 
 def create_zoom_single(
     prompts_array,
@@ -290,55 +372,10 @@ def create_zoom_single(
         for j in range(num_interpol_frames - 1):
             interpol_image = current_image
 
-            interpol_width = round(
-                (
-                    1
-                    - (1 - 2 * mask_width / width)
-                    ** (1 - (j + 1) / num_interpol_frames)
-                )
-                * width
-                / 2
-            )
-
-            interpol_height = round(
-                (
-                    1
-                    - (1 - 2 * mask_height / height)
-                    ** (1 - (j + 1) / num_interpol_frames)
-                )
-                * height
-                / 2
-            )
-
-            interpol_image = interpol_image.crop(
-                (
-                    interpol_width,
-                    interpol_height,
-                    width - interpol_width,
-                    height - interpol_height,
-                )
-            )
-
-            interpol_image = interpol_image.resize((width, height))
-
-            # paste the higher resolution previous image in the middle to avoid drop in quality caused by zooming
-            interpol_width2 = round(
-                (1 - (width - 2 * mask_width) / (width - 2 * interpol_width))
-                / 2
-                * width
-            )
-
-            interpol_height2 = round(
-                (1 - (height - 2 * mask_height) / (height - 2 * interpol_height))
-                / 2
-                * height
-            )
-
-            prev_image_fix_crop = shrink_and_paste_on_blank(
-                prev_image_fix, interpol_width2, interpol_height2
-            )
-
-            interpol_image.paste(prev_image_fix_crop, mask=prev_image_fix_crop)
+            if (anim_mode == "Zoom"): 
+                intepol_image = get_interpol_image_zoom(prev_image_fix, interpol_image, mask_width, mask_height, width, height, num_interpol_frames, j)
+            else:
+                intepol_image = get_interpol_image_pan(prev_image_fix, interpol_image, mask_width, width, height, num_interpol_frames, j)
 
             all_frames.append(interpol_image)
         all_frames.append(current_image)
